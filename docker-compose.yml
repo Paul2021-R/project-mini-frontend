@@ -1,0 +1,25 @@
+# Docker Compose 파일 형식 버전
+version: '3.8'
+
+services:
+  dev:
+    container_name: project-mini-dev
+    build:
+      context: .
+      target: builder
+    command: pnpm run dev
+    ports:
+      - "5858:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+  prod:
+    container_name: project-mini-prod
+    build:
+      context: .
+    ports:
+      - "5858:3000"
+    environment:
+      - NODE_ENV=production
