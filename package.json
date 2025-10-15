@@ -6,7 +6,15 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "start:dev": "docker compose up dev",
+    "start:devB": "docker compose up dev -d",
+    "start:prod": "docker compose up prod",
+    "start:prodB": "docker compose up prod -d",
+    "set:dev": "docker compose build dev",
+    "set:prod": "docker compose build --no-cache prod",
+    "unset:dev": "docker compose down --rmi all --volumes",
+    "unset:prod": "docker compose down --rmi all --volumes" 
   },
   "dependencies": {
     "react": "19.1.0",
