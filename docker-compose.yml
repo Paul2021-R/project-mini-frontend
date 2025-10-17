@@ -9,6 +9,7 @@ services:
       - app-green
     networks:
       - project-mini-network
+    restart: unless-stopped
 
   app-blue:
     container_name: project-mini-app-blue
