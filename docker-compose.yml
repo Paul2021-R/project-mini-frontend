@@ -16,12 +16,19 @@ services:
     build: ./app
     networks:
       - project-mini-network
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
 
   app-green:
     container_name: project-mini-app-green
     build: ./app
     networks:
       - project-mini-network
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
 networks:
   project-mini-network:
     driver: bridge
