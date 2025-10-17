@@ -1,13 +1,11 @@
 # Docker Compose 파일 형식 버전
-version: '3.8'
-
 services:
   dev:
     container_name: project-mini-dev
     build:
       context: .
-      target: builder
-    command: sh -c "pnpm install && pnpm run dev"
+      target: dev_runner 
+    command: sh -c "pnpm run dev"
     ports:
       - "5858:3000"
     volumes:
