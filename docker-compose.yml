@@ -1,23 +1,34 @@
-# Docker Compose 파일 형식 버전
 services:
-  dev:
-    container_name: project-mini-dev
-    build:
-      context: .
-      target: dev_runner 
-    command: sh -c "pnpm run dev"
+  nginx:
+    container_name: project-mini-nginx
+    build: ./nginx
     ports:
-      - "5858:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-  prod:
-    container_name: project-mini-prod
-    build:
-      context: .
-    ports:
-      - "5858:3000"
+      - "80:80"
+    depends_on:
+      - app-blue
+      - app-green
+    networks:
+      - project-mini-network
+    restart: unless-stopped
+
+  app-blue:
+    container_name: project-mini-app-blue
+    build: ./app
+    networks:
+      - project-mini-network
     environment:
       - NODE_ENV=production
+    restart: unless-stopped
+
+  app-green:
+    container_name: project-mini-app-green
+    build: ./app
+    networks:
+      - project-mini-network
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+networks:
+  project-mini-network:
+    driver: bridge
