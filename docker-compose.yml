@@ -40,6 +40,8 @@ services:
     volumes:
       - ./nginx/certs:/etc/letsencrypt
       - ./nginx/www:/var/www/certbot
+    networks:
+    - project-mini-network
 
 networks:
   project-mini-network:
