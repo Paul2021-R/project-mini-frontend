@@ -10,17 +10,18 @@ pipeline {
 
         DISCORD_CREDS_ID = 'discord-webhook-url'
 
-        IMAGE_NAME = 'ghcr.io/Paul2021-R/project-mini-frontend'
+        IMAGE_NAME = 'ghcr.io/paul2021-r/project-mini-frontend'
 
-        TARGET_HOST = 'hansol@192.168.0.37'
-        TARGET_PORT = '15314'
+        TARGET_HOST = credentials('ssh-host-creds')
+        TARGET_PORT = credentials('ssh-port-creds')
+        TARGET_PROJECT_PATH = '/home/hansol/workspace/project-mini-frontend'
     }
 
     // code pull
     stage('Checkout') {
         steps {
             echo "1. Get the latest code from GitHub"
-            git credentialsId: GITHUB_CREDS_ID, url: 'https://github.com/Paul2021-R/project-mini-frontend.git', branch: 'main'
+            git credentialsId: GITHUB_CREDS_ID, url: 'https://github.com/paul2021-r/project-mini-frontend.git', branch: 'main'
         }
     }
 
@@ -29,7 +30,7 @@ pipeline {
         steps {
             echo "2. Build New Docker Image"
             script {
-                def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}" // env 에 있는 변수들이 어떤게 있는지 정리해둘것
+                def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}" 
                 sh "docker build -t ${imageTag} ./app" 
             }
         }
@@ -42,7 +43,7 @@ pipeline {
             script {
                 def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
                 withCredentials([usernamePassword(credentialsId: GHCR_CREDS_ID, usernameVariable: 'USER', passwordVariable: 'TOKEN')]) {
-                    sh "echo ${TOKEN} | docker login ghcr.io -u ${USER} --password-stdin"
+                    sh "echo $TOKEN | docker login ghcr.io -u $USER --password-stdin"
                     sh "docker push ${imageTag}"
                 }
             }
@@ -54,23 +55,34 @@ pipeline {
         steps {
             echo "4. Deploy the new image to the ${TARGET_DEPLOY_SERVER} server"
             script {
-                def deployService = (env.BUILD_NUMBER.toInteger() % 2 == 0) ? "app-green" : "app-blue"
+                // 어떤 컨테이너를 업데이트 및 업스트림 대상을 지정
+                def deployService = (env.BUILD_NUMBER.toInteger() % 2 == 0) ? "app-green" : "app-blue" 
                 def upstreamService = (deployService == "app-green") ? "app-blue" : "app-green"
+                def deployEnvVar = (deployService == "app-green") ? "APP_GREEN_IMAGE" : "APP_BLUE_IMAGE"
 
                 def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
-                // ssh 세부 옵션에 대해서 정확히 알아둘것 Strict~ 이하 내용 확인할 것
-                sh """ 
-                    ssh -o StrictHostKeyChecking=no -p ${TARGET_PORT} ${TARGET_HOST} '
-                    echo "--- (1/4) Pull the new image : ${imageTag} ---"
-                    docker pull ${imageTag}
 
-                    echo "--- (2/4) Replace ${deployService} Server to new  ---"
-                    echo "--- (3/4) Switch Nginx Configuration to change traffic ---"
-                    echo "--- (4/4) Reload Nginx Configuration ---"
-                    
-                    echo "--- All Deploy Proccess is done ---"
-                    '
-                """
+                sshagent(credentials: [TARGET_SSH_CREDS_ID]) {
+                    sh """ 
+                        ssh -o StrictHostKeyChecking=no -p ${TARGET_PORT} ${TARGET_HOST} '
+                        echo "--- (1/4) Pull the new image : ${imageTag} ---"
+                        docker pull ${imageTag}
+
+                        echo "--- (2/4) Replace ${deployService} Server to new  ---"
+                        cd ${TARGET_PROJECT_PATH}
+                        echo "${deployEnvVar}=${imageTag}" > .env.${deployService}
+                        docker compose --env-file .env.${deployService} up -d --no-deps ${deployService}
+
+                        echo "--- (3/4) Switch Nginx Configuration to change traffic ---"
+                        sed -i "s/server ${upstreamService}:3000;/server ${deployService}:3000;/" ${TARGET_PROJECT_PATH}/nginx/nginx.conf
+
+                        echo "--- (4/4) Reload Nginx Configuration ---"
+                        docker compose exec nginx nginx -s reload
+                        
+                        echo "--- All Deploy Proccess is done ---"
+                        '
+                    """
+                }
             }
         }
     }
@@ -89,9 +101,11 @@ pipeline {
         failure {
             echo "Deployment failed! Now send a discord notification."
 
+            withCredentials([string(credentialsId: DISCORD_CREDS_ID, variable: 'DISCORD_URL')]) {
                 def message = "{\"content\": \"🔥 Build Process is failed. Check Build logs ${env.BUILD_URL} : **[${env.JOB_NAME}]** - **#${env.BUILD_NUMBER}**\"}"
 
                 sh "curl -X POST -H 'Content-Type: application/json' --data '${message}' ${DISCORD_URL}"
+            }
         }
         always {
             echo "Logout from GHCR"
