@@ -44,11 +44,7 @@ pipeline {
                 script {
                     def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
                     withCredentials([usernamePassword(credentialsId: GHCR_CREDS_ID, usernameVariable: 'USER', passwordVariable: 'TOKEN')]) {
-                        sh '''
-                            docker login -u ${USER} --password-stdin ghcr.io << EOF
-                            ${TOKEN}
-                            EOF
-                        '''
+                        sh "echo ${TOKEN} | docker login ghcr.io -u ${USER} --password-stdin"
                         sh "docker push ${imageTag}"
                     }
                 }
