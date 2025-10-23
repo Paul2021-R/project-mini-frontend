@@ -78,7 +78,7 @@ pipeline {
                         docker compose -f docker-compose.yml --env-file .env.${deployService} up -d --no-deps ${deployService} || exit 1
 
                         echo "--- (3/4) Switch Nginx Configuration to change traffic ---"
-                        sed -i "s|server ${upstreamService}:3000;|server ${deployService}:3000;|" ${TARGET_PROJECT_PATH}/nginx/nginx.conf exit 1
+                        sed -i "s|server ${upstreamService}:3000;|server ${deployService}:3000;|" ${TARGET_PROJECT_PATH}/nginx/nginx.conf || exit 1
 
                         echo "--- (4/4) Reload Nginx Configuration ---"
                         docker compose -f docker-compose.yml exec -T nginx nginx -s reload || exit 1
