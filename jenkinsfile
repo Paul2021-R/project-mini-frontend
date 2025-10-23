@@ -68,6 +68,10 @@ pipeline {
                                 ssh -o StrictHostKeyChecking=no -p ${TARGET_PORT} ${TARGET_HOST} '
                                 set -ex
                                 
+                                echo "--- Refresh main repository ---"
+                                git pull origin main
+                                git checkout main
+
                                 echo "--- Logging in to GHCR on target server ---"
                                 echo "${GHCR_TOKEN}" | docker login ghcr.io -u ${GHCR_USER} --password-stdin
 
@@ -76,16 +80,13 @@ pipeline {
 
                                 echo "--- (2/4) Replace ${deployService} Server to new  ---"
                                 cd ${TARGET_PROJECT_PATH}
-                                echo "${deployEnvVar}=${imageTag}" > .env.${deployService}
-                                docker compose --env-file .env.${deployService} up -d --no-deps --force-recreate ${deployService}
+                                docker compose --env-file init.env up -d --no-deps --force-recreate ${deployService}
 
                                 echo "--- (3/4) Switch Nginx Configuration to change traffic ---"
                                 sed -i "s|server ${upstreamService}:3000;|server ${deployService}:3000;|" ${TARGET_PROJECT_PATH}/nginx/nginx.conf
 
                                 echo "--- (4/4) Reload Nginx Configuration ---"
                                 docker compose -f docker-compose.yml exec -T nginx nginx -s reload
-
-                                rm -rf .env.${deployService}
 
                                 echo "--- Logging out from GHCR on target server ---"
                                 docker logout ghcr.io
