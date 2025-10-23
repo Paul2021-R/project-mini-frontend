@@ -66,7 +66,7 @@ pipeline {
                     sshagent(credentials: [TARGET_SSH_CREDS_ID]) {
                         sh """ 
                             ssh -o StrictHostKeyChecking=no -p ${TARGET_PORT} ${TARGET_HOST} '
-                            set -e
+                            set -ex
                             
                             echo "--- (1/4) Pull the new image : ${imageTag} ---"
                             docker pull ${imageTag}
