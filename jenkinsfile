@@ -59,7 +59,6 @@ pipeline {
                     // 어떤 컨테이너를 업데이트 및 업스트림 대상을 지정
                     def deployService = (env.BUILD_NUMBER.toInteger() % 2 == 0) ? "app-green" : "app-blue" 
                     def upstreamService = (deployService == "app-green") ? "app-blue" : "app-green"
-                    def deployEnvVar = (deployService == "app-green") ? "APP_GREEN_IMAGE" : "APP_BLUE_IMAGE"
 
                     def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
                     withCredentials([usernamePassword(credentialsId: GHCR_CREDS_ID, usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
@@ -89,7 +88,7 @@ pipeline {
                                 sed -i "s|server ${upstreamService}:3000;|server ${deployService}:3000;|" ${TARGET_PROJECT_PATH}/nginx/nginx.conf
 
                                 echo "--- (4/4) Reload Nginx Configuration ---"
-                                docker compose -f docker-compose.yml exec -T nginx nginx -s reload
+                                docker compose --env-file init.env -f docker-compose.yml exec -T nginx nginx -s reload
 
                                 echo "--- Logging out from GHCR on target server ---"
                                 docker logout ghcr.io
