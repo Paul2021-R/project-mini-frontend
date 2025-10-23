@@ -1,3 +1,5 @@
+env_file: ./init.env
+
 services:
   nginx:
     container_name: project-mini-nginx
@@ -18,7 +20,8 @@ services:
 
   app-blue:
     container_name: project-mini-app-blue
-    build: ./app
+    image: ${APP_BLUE_IMAGE}
+    # build: ./app
     networks:
       - project-mini-network
     environment:
@@ -27,7 +30,8 @@ services:
 
   app-green:
     container_name: project-mini-app-green
-    build: ./app
+    image: ${APP_GREEN_IMAGE}
+    # build: ./app
     networks:
       - project-mini-network
     environment:
