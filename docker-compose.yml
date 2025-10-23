@@ -1,5 +1,3 @@
-env_file: ./init.env
-
 services:
   nginx:
     container_name: project-mini-nginx
