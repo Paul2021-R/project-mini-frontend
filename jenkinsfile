@@ -48,7 +48,7 @@ pipeline {
                         ${TOKEN}
                         EOF
                     '''
-                    sh "docker push ${imageTag} "
+                    sh "docker push ${imageTag}"
                 }
             }
         }
@@ -68,20 +68,22 @@ pipeline {
 
                 sshagent(credentials: [TARGET_SSH_CREDS_ID]) {
                     sh """ 
-                        ssh -o StrictHostKeyChecking=no -p ${TARGET_PORT} ${TARGET_HOST} 'set -e
+                        ssh -o StrictHostKeyChecking=no -p ${TARGET_PORT} ${TARGET_HOST} '
+                        set -e
+                        
                         echo "--- (1/4) Pull the new image : ${imageTag} ---"
-                        docker pull ${imageTag} || exit 1
+                        docker pull ${imageTag}
 
                         echo "--- (2/4) Replace ${deployService} Server to new  ---"
                         cd ${TARGET_PROJECT_PATH}
                         echo "${deployEnvVar}=${imageTag}" > .env.${deployService}
-                        docker compose -f docker-compose.yml --env-file .env.${deployService} up -d --no-deps ${deployService} || exit 1
+                        docker compose -f docker-compose.yml --env-file .env.${deployService} up -d --no-deps ${deployService}
 
                         echo "--- (3/4) Switch Nginx Configuration to change traffic ---"
-                        sed -i "s|server ${upstreamService}:3000;|server ${deployService}:3000;|" ${TARGET_PROJECT_PATH}/nginx/nginx.conf || exit 1
+                        sed -i "s|server ${upstreamService}:3000;|server ${deployService}:3000;|" ${TARGET_PROJECT_PATH}/nginx/nginx.conf
 
                         echo "--- (4/4) Reload Nginx Configuration ---"
-                        docker compose -f docker-compose.yml exec -T nginx nginx -s reload || exit 1
+                        docker compose -f docker-compose.yml exec -T nginx nginx -s reload
                         
                         echo "--- All Deploy Proccess is done ---"
                         '
