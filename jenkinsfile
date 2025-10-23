@@ -1,0 +1,101 @@
+pipeline {
+    agent any
+    
+    environment {
+        GHCR_CREDS_ID = 'ghcr-creds'
+        GITHUB_CREDS_ID = 'github-creds'
+        TARGET_SSH_CREDS_ID = 'a5-localhost-jenkins'
+
+        TARGET_DEPLOY_SERVER = 'GEEKOM-A5-Server'
+
+        DISCORD_CREDS_ID = 'discord-webhook-url'
+
+        IMAGE_NAME = 'ghcr.io/Paul2021-R/project-mini-frontend'
+
+        TARGET_HOST = 'hansol@192.168.0.37'
+        TARGET_PORT = '15314'
+    }
+
+    // code pull
+    stage('Checkout') {
+        steps {
+            echo "1. Get the latest code from GitHub"
+            git credentialsId: GITHUB_CREDS_ID, url: 'https://github.com/Paul2021-R/project-mini-frontend.git', branch: 'main'
+        }
+    }
+
+    // build image
+    stage('Build Image') {
+        steps {
+            echo "2. Build New Docker Image"
+            script {
+                def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}" // env 에 있는 변수들이 어떤게 있는지 정리해둘것
+                sh "docker build -t ${imageTag} ./app" 
+            }
+        }
+    }
+
+    // push image
+    stage('Push to GHCR') {
+        steps {
+            echo "3. Push the Docker Image to GHCR"
+            script {
+                def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
+                withCredentials([usernamePassword(credentialsId: GHCR_CREDS_ID, usernameVariable: 'USER', passwordVariable: 'TOKEN')]) {
+                    sh "echo ${TOKEN} | docker login ghcr.io -u ${USER} --password-stdin"
+                    sh "docker push ${imageTag}"
+                }
+            }
+        }
+    }
+
+    // deploy to server
+    stage('Deploy to Server') {
+        steps {
+            echo "4. Deploy the new image to the ${TARGET_DEPLOY_SERVER} server"
+            script {
+                def deployService = (env.BUILD_NUMBER.toInteger() % 2 == 0) ? "app-green" : "app-blue"
+                def upstreamService = (deployService == "app-green") ? "app-blue" : "app-green"
+
+                def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
+                // ssh 세부 옵션에 대해서 정확히 알아둘것 Strict~ 이하 내용 확인할 것
+                sh """ 
+                    ssh -o StrictHostKeyChecking=no -p ${TARGET_PORT} ${TARGET_HOST} '
+                    echo "--- (1/4) Pull the new image : ${imageTag} ---"
+                    docker pull ${imageTag}
+
+                    echo "--- (2/4) Replace ${deployService} Server to new  ---"
+                    echo "--- (3/4) Switch Nginx Configuration to change traffic ---"
+                    echo "--- (4/4) Reload Nginx Configuration ---"
+                    
+                    echo "--- All Deploy Proccess is done ---"
+                    '
+                """
+            }
+        }
+    }
+
+
+    post {
+        success {
+            echo "Deployment succeeded. Now send a discord notification."
+
+            withCredentials([string(credentialsId: DISCORD_CREDS_ID, variable: 'DISCORD_URL')]) {
+                def message = "{\"content\": \"🚀 Build Process is successfully finished : **[${env.JOB_NAME}]** - **#${env.BUILD_NUMBER}**\"}"
+
+                sh "curl -X POST -H 'Content-Type: application/json' --data '${message}' ${DISCORD_URL}"
+            }
+        }
+        failure {
+            echo "Deployment failed! Now send a discord notification."
+
+                def message = "{\"content\": \"🔥 Build Process is failed. Check Build logs ${env.BUILD_URL} : **[${env.JOB_NAME}]** - **#${env.BUILD_NUMBER}**\"}"
+
+                sh "curl -X POST -H 'Content-Type: application/json' --data '${message}' ${DISCORD_URL}"
+        }
+        always {
+            echo "Logout from GHCR"
+            sh "docker logout ghcr.io"
+        }
+    }
+}
