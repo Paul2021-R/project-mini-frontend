@@ -57,7 +57,6 @@ pipeline {
                             echo "Cleaning up output.log..."
                             // (추가 개선) -f 옵션으로 파일이 없어도 에러를 내지 않도록 합니다.
                             sh "rm -f output.log"
-                        }
                     }   
                 }
             }
