@@ -34,6 +34,7 @@ pipeline {
             steps {
                 echo "2. Check Code Style and Format"
                 script {
+                    dir('app') {
                         // 1. try 블록으로 메인 로직을 감쌉니다.
                         try {
                             def exitCode = sh(script:"pnpm format:check > output.log 2>&1", returnStatus: true)
@@ -61,7 +62,9 @@ pipeline {
                             echo "Cleaning up output.log..."
                             // (추가 개선) -f 옵션으로 파일이 없어도 에러를 내지 않도록 합니다.
                             sh "rm -f output.log"
-                    }   
+                        }   
+                        
+                    }
                 }
             }
         }
