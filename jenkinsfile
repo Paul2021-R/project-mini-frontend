@@ -39,11 +39,7 @@ pipeline {
                                 withCredentials([string(credentialsId: DISCORD_CREDS_ID, variable: 'DISCORD_URL')]) {
                                     
                                     // (추가 개선) output에 "나 \가 포함되면 JSON이 깨질 수 있으므로 이스케이프합니다.
-<<<<<<< HEAD
-                                    def jsonSafeOutput = output.replaceAll(/\\/, /\\\\/).replaceAll(/"/, /\\"/).replaceAll(/\n/, /\\n/)
-=======
                                     def jsonSafeOutput = output.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n')
->>>>>>> @{-1}
                                     
                                     def message = "{\"content\": \"❌ Formatter Check is failed. Check logs ${env.BUILD_URL} : **[${env.JOB_NAME}]** - **#${env.BUILD_NUMBER}**\nerrorLog(${exitCode}): ${jsonSafeOutput}\"}"
 
