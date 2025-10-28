@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -52,10 +52,8 @@ export default function Home() {
         </div>
       </main> */}
       <main>
-        <h1>
-          Hello world! This is Project-mini for Web front developping!
-        </h1>
-        <br/>
+        <h1>Hello world! This is Project-mini for Web front developping!</h1>
+        <br />
 
         <div>
           <a href="https://paul2021-r.github.io">This is My Blog!!</a>
