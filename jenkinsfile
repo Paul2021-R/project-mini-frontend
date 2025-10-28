@@ -33,8 +33,10 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo "Install Dependencies"
-                dir('app') {
-                    sh "pnpm install"
+                script {
+                    dir('app') {
+                        sh "pnpm install"
+                    }
                 }
             }
         }
