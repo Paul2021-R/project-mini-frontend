@@ -30,6 +30,15 @@ pipeline {
             }
         }
 
+        stage('Install Dependencies') {
+            steps {
+                echo "Install Dependencies"
+                dir('app') {
+                    sh "pnpm install"
+                }
+            }
+        }
+
         stage('Code Style Check') {
             steps {
                 echo "2. Check Code Style and Format"
