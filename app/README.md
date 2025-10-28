@@ -60,7 +60,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
     "set:dev": "docker compose build dev",
     "set:prod": "docker compose build --no-cache prod",
     "unset:dev": "docker compose down --rmi all --volumes",
-    "unset:prod": "docker compose down --rmi all --volumes" 
+    "unset:prod": "docker compose down --rmi all --volumes"
   },
   "dependencies": {
     "react": "19.1.0",
@@ -85,32 +85,32 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 개발 환경은 빠른 개발 주기와 코드 변경 사항의 즉각적인 반영을 목표로 합니다.
 
-*   **`Dockerfile` 구성**: `Dockerfile`의 `builder` 스테이지를 활용하여 개발에 필요한 모든 의존성과 소스 코드를 포함합니다. 이는 개발 서버 실행에 필요한 모든 도구를 제공합니다.
-*   **`docker-compose.yml` (`dev` 서비스)**:
-    *   `build.target: builder`: `Dockerfile`의 `builder` 스테이지를 직접 사용하여 개발에 필요한 모든 도구와 소스 코드를 포함합니다.
-    *   `command: pnpm run dev`: Next.js 개발 서버를 실행하여 HMR(Hot Module Replacement)을 지원합니다. 코드 변경 시 컨테이너를 다시 빌드할 필요 없이 즉시 반영됩니다.
-    *   `volumes`: 로컬 프로젝트 디렉토리(`app/`)를 컨테이너 내부의 `/app` 경로에 마운트(Mount)합니다. 이를 통해 로컬에서 코드를 수정하면 컨테이너 내부의 파일도 함께 업데이트되어 개발 서버에 즉시 반영됩니다.
-    *   `environment: NODE_ENV=development`: `NODE_ENV` 환경 변수를 `development`로 설정하여 Next.js가 개발 모드로 동작하도록 합니다.
-*   **실행 명령어**: `package.json` 스크립트를 통해 개발 환경을 쉽게 시작할 수 있습니다.
-    *   `pnpm start:dev`: 개발 환경 컨테이너를 포그라운드(foreground)에서 실행합니다. (개발 서버 실행)
-    *   `pnpm start:devB`: 개발 환경 컨테이너를 백그라운드(background)에서 실행합니다. (개발 서버 실행)
-    *   `pnpm set:dev`: 개발 환경 이미지를 빌드합니다.
-    *   `pnpm unset:dev`: 개발 환경 컨테이너와 이미지를 모두 제거합니다.
+- **`Dockerfile` 구성**: `Dockerfile`의 `builder` 스테이지를 활용하여 개발에 필요한 모든 의존성과 소스 코드를 포함합니다. 이는 개발 서버 실행에 필요한 모든 도구를 제공합니다.
+- **`docker-compose.yml` (`dev` 서비스)**:
+  - `build.target: builder`: `Dockerfile`의 `builder` 스테이지를 직접 사용하여 개발에 필요한 모든 도구와 소스 코드를 포함합니다.
+  - `command: pnpm run dev`: Next.js 개발 서버를 실행하여 HMR(Hot Module Replacement)을 지원합니다. 코드 변경 시 컨테이너를 다시 빌드할 필요 없이 즉시 반영됩니다.
+  - `volumes`: 로컬 프로젝트 디렉토리(`app/`)를 컨테이너 내부의 `/app` 경로에 마운트(Mount)합니다. 이를 통해 로컬에서 코드를 수정하면 컨테이너 내부의 파일도 함께 업데이트되어 개발 서버에 즉시 반영됩니다.
+  - `environment: NODE_ENV=development`: `NODE_ENV` 환경 변수를 `development`로 설정하여 Next.js가 개발 모드로 동작하도록 합니다.
+- **실행 명령어**: `package.json` 스크립트를 통해 개발 환경을 쉽게 시작할 수 있습니다.
+  - `pnpm start:dev`: 개발 환경 컨테이너를 포그라운드(foreground)에서 실행합니다. (개발 서버 실행)
+  - `pnpm start:devB`: 개발 환경 컨테이너를 백그라운드(background)에서 실행합니다. (개발 서버 실행)
+  - `pnpm set:dev`: 개발 환경 이미지를 빌드합니다.
+  - `pnpm unset:dev`: 개발 환경 컨테이너와 이미지를 모두 제거합니다.
 
 ### 🚀 운영 환경 (Production Environment)
 
 운영 환경은 최적화된 성능, 안정성 및 보안을 목표로 합니다.
 
-*   **`Dockerfile` 구성**: `Dockerfile`의 `runner` 스테이지를 활용하여 최종 운영 이미지를 구성합니다. 이 스테이지는 `builder` 스테이지에서 생성된 빌드 결과물(`_next`), 정적 파일(`public`), 운영에 필요한 `node_modules` 및 `package.json` 파일만 복사하여 이미지 크기를 최소화하고 보안을 강화합니다.
-*   **`docker-compose.yml` (`prod` 서비스)**:
-    *   `build.context: .`: `Dockerfile` 전체를 빌드하며, 최종적으로 `runner` 스테이지에서 생성된 최적화된 운영 이미지를 사용합니다.
-    *   `command: pnpm run start`: 빌드된 Next.js 애플리케이션을 시작합니다.
-    *   `environment: NODE_ENV=production`: `NODE_ENV` 환경 변수를 `production`으로 설정하여 Next.js가 운영 모드로 동작하도록 합니다.
-    *   `volumes`는 설정되어 있지 않습니다. 이는 빌드된 이미지를 그대로 사용하여 일관된 운영 환경을 보장합니다.
-*   **실행 명령어**: `package.json` 스크립트를 통해 운영 환경을 쉽게 시작할 수 있습니다.
-    *   `pnpm start:prod`: 운영 환경 컨테이너를 포그라운드(foreground)에서 실행합니다. (운영 서버 실행)
-    *   `pnpm start:prodB`: 운영 환경 컨테이너를 백그라운드(background)에서 실행합니다. (운영 서버 실행)
-    *   `pnpm set:prod`: 운영 환경 이미지를 캐시 없이 빌드합니다.
-    *   `pnpm unset:prod`: 운영 환경 컨테이너와 이미지를 모두 제거합니다.
+- **`Dockerfile` 구성**: `Dockerfile`의 `runner` 스테이지를 활용하여 최종 운영 이미지를 구성합니다. 이 스테이지는 `builder` 스테이지에서 생성된 빌드 결과물(`_next`), 정적 파일(`public`), 운영에 필요한 `node_modules` 및 `package.json` 파일만 복사하여 이미지 크기를 최소화하고 보안을 강화합니다.
+- **`docker-compose.yml` (`prod` 서비스)**:
+  - `build.context: .`: `Dockerfile` 전체를 빌드하며, 최종적으로 `runner` 스테이지에서 생성된 최적화된 운영 이미지를 사용합니다.
+  - `command: pnpm run start`: 빌드된 Next.js 애플리케이션을 시작합니다.
+  - `environment: NODE_ENV=production`: `NODE_ENV` 환경 변수를 `production`으로 설정하여 Next.js가 운영 모드로 동작하도록 합니다.
+  - `volumes`는 설정되어 있지 않습니다. 이는 빌드된 이미지를 그대로 사용하여 일관된 운영 환경을 보장합니다.
+- **실행 명령어**: `package.json` 스크립트를 통해 운영 환경을 쉽게 시작할 수 있습니다.
+  - `pnpm start:prod`: 운영 환경 컨테이너를 포그라운드(foreground)에서 실행합니다. (운영 서버 실행)
+  - `pnpm start:prodB`: 운영 환경 컨테이너를 백그라운드(background)에서 실행합니다. (운영 서버 실행)
+  - `pnpm set:prod`: 운영 환경 이미지를 캐시 없이 빌드합니다.
+  - `pnpm unset:prod`: 운영 환경 컨테이너와 이미지를 모두 제거합니다.
 
 이러한 구성을 통해 개발 환경에서는 빠른 개발 및 테스트를 위한 유연성을 제공하고, 운영 환경에서는 최적화된 성능과 안정성을 보장합니다.
