@@ -62,10 +62,10 @@ pipeline {
                                     sh "curl -X POST -H 'Content-Type: application/json' --data '${message}' ${DISCORD_URL}"
                                 }
                                 // Jenkins 로그에는 원본 output을 남깁니다.
-                                error "Code Formatting check Fialed(${exitCode}) ${output}"    
+                                error "Code Formatting check Failed(${exitCode}) ${output}"    
                             }
                             else {
-                                echo "3. Formatter check is successful."
+                                echo "Formatter check is successful."
                             }
                         } finally {
                             //    이 블록은 위에서 error가 발생해도, 성공해도 "항상" 실행됩니다.
@@ -95,15 +95,15 @@ pipeline {
                                     // (추가 개선) output에 "나 \가 포함되면 JSON이 깨질 수 있으므로 이스케이프합니다.
                                     def jsonSafeOutput = output.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n')
                                     
-                                    def message = "{\"content\": \"❌ Lint Check is failed. Check logs ${env.BUILD_URL} : **[${env.JOB_NAME}]** - **#${env.BUILD_NUMBER}**errorLog(${exitCode}): ${jsonSafeOutput}\"}"
+                                    def message = "{\"content\": \"❌ Lint Check is failed. Check logs ${env.BUILD_URL} : **[${env.JOB_NAME}]** - **#${env.BUILD_NUMBER}** errorLog(${exitCode}): ${jsonSafeOutput}\"}"
 
                                     sh "curl -X POST -H 'Content-Type: application/json' --data '${message}' ${DISCORD_URL}"
                                 }
                                 // Jenkins 로그에는 원본 output을 남깁니다.
-                                error "Code Linting check Fialed(${exitCode}) ${output}"    
+                                error "Code Linting check Failed(${exitCode}) ${output}"    
                             }
                             else {
-                                echo "4. Lint check is successful."
+                                echo "Lint check is successful."
                             }
                         } finally {
                             // 2. 'finally' 블록에 정리 코드를 둡니다.
