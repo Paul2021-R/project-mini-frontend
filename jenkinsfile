@@ -121,7 +121,7 @@ pipeline {
         // build image
         stage('Build Image') {
             steps {
-                echo "4. Build New Docker Image"
+                echo "5. Build New Docker Image"
                 script {
                     def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}" 
                     sh "docker build -t ${imageTag} ./app" 
@@ -132,7 +132,7 @@ pipeline {
         // push image
         stage('Push to GHCR') {
             steps {
-                echo "5. Push the Docker Image to GHCR"
+                echo "6. Push the Docker Image to GHCR"
                 script {
                     def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
                     withCredentials([usernamePassword(credentialsId: GHCR_CREDS_ID, usernameVariable: 'USER', passwordVariable: 'TOKEN')]) {
@@ -146,7 +146,7 @@ pipeline {
         // deploy to server
         stage('Deploy to Server') {
             steps {
-                echo "6. Deploy the new image to the ${TARGET_DEPLOY_SERVER} server"
+                echo "7. Deploy the new image to the ${TARGET_DEPLOY_SERVER} server"
                 script {
                     // 어떤 컨테이너를 업데이트 및 업스트림 대상을 지정
                     def deployService = (env.BUILD_NUMBER.toInteger() % 2 == 0) ? "app-green" : "app-blue" 
