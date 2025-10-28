@@ -23,4 +23,14 @@ import prettierConfig from 'eslint-config-prettier';
 //   },
 // ];
 
-export default [prettierConfig];
+export default [
+    {
+        ignores: [
+            "node_modules/**",
+            ".next/**",
+            "next-env.d.ts",
+            "public"
+        ]
+    },
+    prettierConfig
+];
