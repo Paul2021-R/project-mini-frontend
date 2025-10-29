@@ -76,12 +76,14 @@ pipeline {
                                     sh "curl -X POST -H 'Content-Type: application/json' --data '${message}' ${DISCORD_URL}"
                                 }
                                 // Jenkins 로그에는 원본 output을 남깁니다.
-                                failureStage = "Code Style Check Stage"
                                 error "Code Formatting check Failed(${exitCode}) ${output}"    
                             }
                             else {
                                 echo "Formatter check is successful."
                             }
+                        } catch (Exception e) {
+                            failureStage = "Code Style Check Stage"
+                            throw e
                         } finally {
                             //    이 블록은 위에서 error가 발생해도, 성공해도 "항상" 실행됩니다.
                             echo "Cleaning up output.log..."
@@ -115,12 +117,14 @@ pipeline {
                                     sh "curl -X POST -H 'Content-Type: application/json' --data '${message}' ${DISCORD_URL}"
                                 }
                                 // Jenkins 로그에는 원본 output을 남깁니다.
-                                failureStage = "Lint Check Stage"
                                 error "Code Linting check Failed(${exitCode}) ${output}"    
                             }
                             else {
                                 echo "Lint check is successful."
                             }
+                        } catch (Exception e) {
+                            failureStage = "Lint Check Stage"
+                            throw e
                         } finally {
                             // 2. 'finally' 블록에 정리 코드를 둡니다.
                             //    이 블록은 위에서 error가 발생해도, 성공해도 "항상" 실행됩니다.
