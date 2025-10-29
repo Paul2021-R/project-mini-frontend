@@ -1,3 +1,5 @@
+def failureStage = "Unknown" // 기본값
+
 pipeline {
     agent any
 
@@ -25,8 +27,15 @@ pipeline {
     // code pull
         stage('Checkout') {
             steps {
-                echo "1. Get the latest code from GitHub"
-                git credentialsId: GITHUB_CREDS_ID, url: 'https://github.com/paul2021-r/project-mini-frontend.git', branch: 'main'
+                script {
+                    try {
+                        echo "1. Get the latest code from GitHub"
+                        git credentialsId: GITHUB_CREDS_ID, url: 'https://github.com/paul2021-r/project-mini-frontend.git', branch: 'main'
+                    } catch (Exception e) {
+                        failureStage = "Checkout Stage"
+                        throw e
+                    }
+                }
             }
         }
 
@@ -34,8 +43,13 @@ pipeline {
             steps {
                 echo "2. Install Dependencies"
                 script {
-                    dir('app') {
-                        sh "pnpm install"
+                    try {
+                        dir('app') {
+                            sh "pnpm install"
+                        }
+                    } catch (Exception e) {
+                        failureStage = "Install Dependencies Stage"
+                        throw e
                     }
                 }
             }
@@ -62,6 +76,7 @@ pipeline {
                                     sh "curl -X POST -H 'Content-Type: application/json' --data '${message}' ${DISCORD_URL}"
                                 }
                                 // Jenkins 로그에는 원본 output을 남깁니다.
+                                failureStage = "Code Style Check Stage"
                                 error "Code Formatting check Failed(${exitCode}) ${output}"    
                             }
                             else {
@@ -100,6 +115,7 @@ pipeline {
                                     sh "curl -X POST -H 'Content-Type: application/json' --data '${message}' ${DISCORD_URL}"
                                 }
                                 // Jenkins 로그에는 원본 output을 남깁니다.
+                                failureStage = "Lint Check Stage"
                                 error "Code Linting check Failed(${exitCode}) ${output}"    
                             }
                             else {
@@ -123,8 +139,13 @@ pipeline {
             steps {
                 echo "5. Build New Docker Image"
                 script {
-                    def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}" 
-                    sh "docker build -t ${imageTag} ./app" 
+                    try {
+                        def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}" 
+                        sh "docker build -t ${imageTag} ./app" 
+                    } catch (Exception e) {
+                        failureStage = "Build Stage"
+                        throw e
+                    }
                 }
             }
         }
@@ -134,10 +155,15 @@ pipeline {
             steps {
                 echo "6. Push the Docker Image to GHCR"
                 script {
-                    def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
-                    withCredentials([usernamePassword(credentialsId: GHCR_CREDS_ID, usernameVariable: 'USER', passwordVariable: 'TOKEN')]) {
-                        sh "echo ${TOKEN} | docker login ghcr.io -u ${USER} --password-stdin"
-                        sh "docker push ${imageTag}"
+                    try {
+                        def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
+                        withCredentials([usernamePassword(credentialsId: GHCR_CREDS_ID, usernameVariable: 'USER', passwordVariable: 'TOKEN')]) {
+                            sh "echo ${TOKEN} | docker login ghcr.io -u ${USER} --password-stdin"
+                            sh "docker push ${imageTag}"
+                        }
+                    } catch (Exception e) {
+                        failureStage = "Push to GHCR Stage"
+                        throw e
                     }
                 }
             }
@@ -148,47 +174,52 @@ pipeline {
             steps {
                 echo "7. Deploy the new image to the ${TARGET_DEPLOY_SERVER} server"
                 script {
-                    // 어떤 컨테이너를 업데이트 및 업스트림 대상을 지정
-                    def deployService = (env.BUILD_NUMBER.toInteger() % 2 == 0) ? "app-green" : "app-blue" 
-                    def upstreamService = (deployService == "app-green") ? "app-blue" : "app-green"
+                    try {
+                        // 어떤 컨테이너를 업데이트 및 업스트림 대상을 지정
+                        def deployService = (env.BUILD_NUMBER.toInteger() % 2 == 0) ? "app-green" : "app-blue" 
+                        def upstreamService = (deployService == "app-green") ? "app-blue" : "app-green"
 
-                    def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
-                    withCredentials([usernamePassword(credentialsId: GHCR_CREDS_ID, usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
-                        sshagent(credentials: [TARGET_SSH_CREDS_ID]) {
-                            sh """ 
-                                ssh -o StrictHostKeyChecking=no -p ${TARGET_PORT} ${TARGET_HOST} '
-                                set -ex
-                                
+                        def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
+                        withCredentials([usernamePassword(credentialsId: GHCR_CREDS_ID, usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
+                            sshagent(credentials: [TARGET_SSH_CREDS_ID]) {
+                                sh """ 
+                                    ssh -o StrictHostKeyChecking=no -p ${TARGET_PORT} ${TARGET_HOST} '
+                                    set -ex
+                                    
 
 
-                                echo "--- Logging in to GHCR on target server ---"
-                                echo "${GHCR_TOKEN}" | docker login ghcr.io -u ${GHCR_USER} --password-stdin
+                                    echo "--- Logging in to GHCR on target server ---"
+                                    echo "${GHCR_TOKEN}" | docker login ghcr.io -u ${GHCR_USER} --password-stdin
 
-                                echo "--- (1/4) Pull the new image : ${imageTag} ---"
-                                docker pull ${imageTag}
+                                    echo "--- (1/4) Pull the new image : ${imageTag} ---"
+                                    docker pull ${imageTag}
 
-                                echo "--- (2/4) Replace ${deployService} Server to new  ---"
-                                cd ${TARGET_PROJECT_PATH}
-                                
-                                echo "--- Refresh main repository ---"
-                                git pull origin main
-                                git checkout main
-                                
-                                docker compose --env-file init.env up -d --no-deps --force-recreate ${deployService}
+                                    echo "--- (2/4) Replace ${deployService} Server to new  ---"
+                                    cd ${TARGET_PROJECT_PATH}
+                                    
+                                    echo "--- Refresh main repository ---"
+                                    git pull origin main
+                                    git checkout main
+                                    
+                                    docker compose --env-file init.env up -d --no-deps --force-recreate ${deployService}
 
-                                echo "--- (3/4) Switch Nginx Configuration to change traffic ---"
-                                sed -i "s|server ${upstreamService}:3000;|server ${deployService}:3000;|" ${TARGET_PROJECT_PATH}/nginx/nginx.conf
+                                    echo "--- (3/4) Switch Nginx Configuration to change traffic ---"
+                                    sed -i "s|server ${upstreamService}:3000;|server ${deployService}:3000;|" ${TARGET_PROJECT_PATH}/nginx/nginx.conf
 
-                                echo "--- (4/4) Reload Nginx Configuration ---"
-                                docker compose --env-file init.env -f docker-compose.yml exec -T nginx nginx -s reload
+                                    echo "--- (4/4) Reload Nginx Configuration ---"
+                                    docker compose --env-file init.env -f docker-compose.yml exec -T nginx nginx -s reload
 
-                                echo "--- Logging out from GHCR on target server ---"
-                                docker logout ghcr.io
-                                
-                                echo "--- All Deploy Proccess is done ---"
-                                '
-                            """
+                                    echo "--- Logging out from GHCR on target server ---"
+                                    docker logout ghcr.io
+                                    
+                                    echo "--- All Deploy Proccess is done ---"
+                                    '
+                                """
+                            }
                         }
+                    } catch (Exception e) {
+                        failureStage = "Deploy Stage"
+                        throw e
                     }
                 }
             }
@@ -213,7 +244,7 @@ pipeline {
 
             script {
                 withCredentials([string(credentialsId: DISCORD_CREDS_ID, variable: 'DISCORD_URL')]) {
-                    def message = "{\"content\": \"🔥 Build Process is failed. Check Build logs ${env.BUILD_URL} : **[${env.JOB_NAME}]** - **#${env.BUILD_NUMBER}**\"}"
+                    def message = "{\"content\": \"🔥 Build Process is failed at ${failureStage}. Check Build logs ${env.BUILD_URL} : **[${env.JOB_NAME}]** - **#${env.BUILD_NUMBER}**\"}"
 
                     sh "curl -X POST -H 'Content-Type: application/json' --data '${message}' ${DISCORD_URL}"
                 }    
