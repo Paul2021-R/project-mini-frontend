@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -9,13 +9,19 @@ export default function Home() {
 
   const toggleProjects = () => {
     setIsProjectsOpen(!isProjectsOpen);
-  }
+  };
 
   const projects = [
     { href: '/projects/01-profile', name: '01. Profile' },
-    { href: '/projects/02-marketing-generator', name: '02. Marketing Generator' },
+    {
+      href: '/projects/02-marketing-generator',
+      name: '02. Marketing Generator',
+    },
     { href: '/projects/03-AI-chat-bot', name: '03. AI Chat Bot' },
-    { href: '/projects/04-prompt-version-controller', name: '04. Prompt Controller' },
+    {
+      href: '/projects/04-prompt-version-controller',
+      name: '04. Prompt Controller',
+    },
   ];
 
   return (
@@ -46,13 +52,19 @@ export default function Home() {
               </Link>
             </li>
             <li>
-              <Link href="/dash-board" className="text-blue-600 hover:underline">
+              <Link
+                href="/dash-board"
+                className="text-blue-600 hover:underline"
+              >
                 DashBoard Page
               </Link>
             </li>
             <li>
               <div className="flex items-center justify-between">
-                <Link href="/projects" className="text-blue-600 hover:underline">
+                <Link
+                  href="/projects"
+                  className="text-blue-600 hover:underline"
+                >
                   Project List Page
                 </Link>
 
