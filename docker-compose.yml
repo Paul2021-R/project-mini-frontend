@@ -18,7 +18,7 @@ services:
 
   app-blue:
     container_name: project-mini-app-blue
-    image: ${APP_BLUE_IMAGE}
+    image: ${APP_BLUE_IMAGE}:${TAG_BLUE}
     # build: ./app
     networks:
       - project-mini-network
@@ -28,7 +28,7 @@ services:
 
   app-green:
     container_name: project-mini-app-green
-    image: ${APP_GREEN_IMAGE}
+    image: ${APP_GREEN_IMAGE}:${TAG_GREEN}
     # build: ./app
     networks:
       - project-mini-network

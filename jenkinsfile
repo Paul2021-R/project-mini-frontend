@@ -184,6 +184,7 @@ pipeline {
                         def upstreamService = (deployService == "app-green") ? "app-blue" : "app-green"
 
                         def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
+                        def tagEnvVar = (deployService == "app-green") ? "TAG_GREEN" : "TAG_BLUE"
                         withCredentials([usernamePassword(credentialsId: GHCR_CREDS_ID, usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
                             sshagent(credentials: [TARGET_SSH_CREDS_ID]) {
                                 sh """ 
@@ -204,6 +205,9 @@ pipeline {
                                     echo "--- Refresh main repository ---"
                                     git pull origin main
                                     git checkout main
+
+                                    echo "--- Exporting new tag for compose: ${tagEnvVar}=${newTag} ---"
+                                    export ${tagEnvVar}="${newTag}"
                                     
                                     docker compose --env-file init.env up -d --no-deps --force-recreate ${deployService}
 
