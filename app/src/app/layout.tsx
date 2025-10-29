@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import Link from 'next/link'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -40,14 +41,14 @@ export function Footer() {
       <div className="container mx-auto px-4 text-center">
         <div className="mb-2 space-x-4">
           {/* 1. 개인정보처리방침 */}
-          <a href="/privacy" className="hover:text-white">
+          <Link href="/privacy" className="hover:text-white">
             개인정보처리방침
-          </a>
+          </Link>
           <span>|</span>
           {/* 2. 이용약관 */}
-          <a href="/terms" className="hover:text-white">
+          <Link href="/terms" className="hover:text-white">
             이용약관
-          </a>
+          </Link>
         </div>
         {/* 3. 저작권 */}
         <p className="text-sm">
