@@ -216,7 +216,7 @@ pipeline {
                                     sed -i "s|server main-nextjs-.*:3000;|server main-${deployService}:3000;|" ./nginx/nginx_upstream_nextjs.conf   
 
                                     echo "--- (4/4) Reload Nginx Configuration ---"
-                                    docker compose --env-file init.env -f docker-compose.yml exec -T nginx nginx -s reload
+                                    docker exec main-nginx nginx -s reload
 
                                     echo "--- Logging out from GHCR on target server ---"
                                     docker logout ghcr.io
