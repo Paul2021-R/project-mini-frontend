@@ -1,7 +1,7 @@
 # Docker Compose 파일 형식 버전
 services:
   dev:
-    container_name: project-mini-dev
+    container_name: protostar-dev
     build:
       context: .
       target: dev_runner
@@ -14,7 +14,7 @@ services:
     environment:
       - NODE_ENV=development
   prod:
-    container_name: project-mini-prod
+    container_name: protostar-prod
     build:
       context: .
     ports:
