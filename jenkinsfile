@@ -21,6 +21,7 @@ pipeline {
         TARGET_HOST = credentials('ssh-host-creds')
         TARGET_PORT = credentials('ssh-port-creds')
         TARGET_PROJECT_PATH = '/home/hansol/workspace/project-mini-frontend'
+        TARGET_INFRA_PATH = '/home/hansol/workspace/project-protostar-server-configs/main-server'
     }
 
     stages {
@@ -191,8 +192,6 @@ pipeline {
                                 sh """ 
                                     ssh -o StrictHostKeyChecking=no -p ${TARGET_PORT} ${TARGET_HOST} '
                                     set -ex
-                                    
-
 
                                     echo "--- Logging in to GHCR on target server ---"
                                     echo "${GHCR_TOKEN}" | docker login ghcr.io -u ${GHCR_USER} --password-stdin
@@ -213,11 +212,10 @@ pipeline {
                                     docker compose --env-file init.env up -d --no-deps --force-recreate ${deployService}
 
                                     echo "--- (3/4) Switch Nginx Configuration to change traffic ---"
-                                    # TODO: 이부분 개선해야함
-                                    sed -i "s|server ${upstreamService}:3000;|server ${deployService}:3000;|" ${TARGET_PROJECT_PATH}/nginx/nginx.conf
+                                    cd ${TARGET_INFRA_PATH}
+                                    sed -i "s|server main-nextjs-.*:3000;|server main-${deployService}:3000;|" ./nginx/nginx_upstream_nextjs.conf   
 
                                     echo "--- (4/4) Reload Nginx Configuration ---"
-                                    # TODO: 이부분 개선해야함
                                     docker compose --env-file init.env -f docker-compose.yml exec -T nginx nginx -s reload
 
                                     echo "--- Logging out from GHCR on target server ---"
