@@ -1,50 +1,23 @@
 services:
-  nginx:
-    container_name: project-mini-nginx
-    build: ./nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./nginx/certs:/etc/letsencrypt
-      - ./nginx/www:/var/www/certbot
-    depends_on:
-      - app-blue
-      - app-green
+  nextjs-blue:
+    container_name: main-nextjs-blue
+    image: ${NEXTJS_BLUE_IMAGE}:${TAG_BLUE}
     networks:
-      - project-mini-network
-    restart: unless-stopped
-
-  app-blue:
-    container_name: project-mini-app-blue
-    image: ${APP_BLUE_IMAGE}:${TAG_BLUE}
-    # build: ./app
-    networks:
-      - project-mini-network
+      - main-protostar
     environment:
       - NODE_ENV=production
     restart: unless-stopped
 
-  app-green:
-    container_name: project-mini-app-green
-    image: ${APP_GREEN_IMAGE}:${TAG_GREEN}
-    # build: ./app
+  nextjs-green:
+    container_name: main-nextjs-green
+    image: ${NEXTJS_GREEN_IMAGE}:${TAG_GREEN}
     networks:
-      - project-mini-network
+      - main-protostar
     environment:
       - NODE_ENV=production
     restart: unless-stopped
-
-  certbot:
-    container_name: project-mini-certbot
-    image: certbot/certbot
-    volumes:
-      - ./nginx/certs:/etc/letsencrypt
-      - ./nginx/www:/var/www/certbot
-    networks:
-    - project-mini-network
 
 networks:
-  project-mini-network:
-    driver: bridge
+  main-protostar:
+    external: true
+    name: main-protostar
