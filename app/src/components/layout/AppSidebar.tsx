@@ -7,6 +7,9 @@ import {
   Settings,
   User,
   PanelLeft,
+  Bot,
+  BarChart,
+  History,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -32,18 +35,28 @@ const items = [
     icon: Home,
   },
   {
+    title: 'Chatbot',
+    url: '/chatbot',
+    icon: Bot,
+  },
+  {
     title: 'Chat History',
-    url: '/dashboard/chat',
-    icon: MessageSquare,
+    url: '/chat-history',
+    icon: History,
   },
   {
     title: 'Materials',
-    url: '/dashboard/materials',
+    url: '/materials',
     icon: FileText,
   },
   {
+    title: 'Statistics',
+    url: '/statistics',
+    icon: BarChart,
+  },
+  {
     title: 'Settings',
-    url: '/dashboard/settings',
+    url: '/setting',
     icon: Settings,
   },
 ];
