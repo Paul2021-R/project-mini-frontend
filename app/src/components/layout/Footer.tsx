@@ -11,16 +11,16 @@ export function Footer() {
         </div>
         <div className="flex gap-4">
           <Link
-            href="/privacy"
-            className="text-sm text-muted-foreground hover:underline"
-          >
-            Privacy Policy
-          </Link>
-          <Link
-            href="/terms"
-            className="text-sm text-muted-foreground hover:underline"
+            href="/terms-of-service"
+            className="text-xs hover:underline underline-offset-4"
           >
             Terms of Service
+          </Link>
+          <Link
+            href="/privacy-policy"
+            className="text-xs hover:underline underline-offset-4"
+          >
+            Privacy
           </Link>
         </div>
       </div>

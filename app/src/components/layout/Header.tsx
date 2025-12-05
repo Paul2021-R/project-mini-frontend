@@ -11,23 +11,23 @@ export function Header() {
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
             <Link
-              href="/about"
+              href="/about/seeker"
               className="transition-colors hover:text-foreground/80 text-foreground/60"
             >
-              About
+              For Job Seekers
             </Link>
             <Link
-              href="/features"
+              href="/about/recruiter"
               className="transition-colors hover:text-foreground/80 text-foreground/60"
             >
-              Features
+              For Recruiters
             </Link>
           </nav>
         </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
-            {/* Search or other items */}
-          </div>
+      </div>
+      <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+        <div className="w-full flex-1 md:w-auto md:flex-none">
+          {/* Search or other items */}
           <nav className="flex items-center space-x-2">
             <Link href="/login">
               <Button variant="ghost" size="sm">
@@ -40,6 +40,6 @@ export function Header() {
           </nav>
         </div>
       </div>
-    </header>
+    </header >
   );
 }
