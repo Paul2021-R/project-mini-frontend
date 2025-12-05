@@ -24,16 +24,6 @@ export default function LandingPage() {
             AI-powered career management that helps you shine. Organize your
             portfolio, prepare for interviews, and connect with opportunities.
           </p>
-          <div className="space-x-4">
-            <Link href="/login">
-              <Button size="lg">Get Started</Button>
-            </Link>
-            <Link href="/features">
-              <Button variant="outline" size="lg">
-                Learn More
-              </Button>
-            </Link>
-          </div>
         </div>
       </section>
 
@@ -92,7 +82,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="container mx-auto py-8 md:py-12 lg:py-24">
+      < section className="container mx-auto py-8 md:py-12 lg:py-24" >
         <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center">
           <h2 className="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-6xl">
             Ready to shine?
@@ -106,7 +96,7 @@ export default function LandingPage() {
             </Button>
           </Link>
         </div>
-      </section>
-    </div>
+      </section >
+    </div >
   );
 }
