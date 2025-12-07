@@ -16,11 +16,11 @@ pipeline {
 
         DISCORD_CREDS_ID = 'discord-webhook-url'
 
-        IMAGE_NAME = 'ghcr.io/paul2021-r/project-mini-frontend'
+        IMAGE_NAME = 'ghcr.io/paul2021-r/project-protostar-frontend'
 
         TARGET_HOST = credentials('ssh-host-creds')
         TARGET_PORT = credentials('ssh-port-creds')
-        TARGET_PROJECT_PATH = '/home/hansol/workspace/project-mini-frontend'
+        TARGET_PROJECT_PATH = '/home/hansol/workspace/project-protostar-frontend'
         TARGET_INFRA_PATH = '/home/hansol/workspace/project-protostar-server-configs/main-server'
     }
 
@@ -31,7 +31,7 @@ pipeline {
                 script {
                     try {
                         echo "1. Get the latest code from GitHub"
-                        git credentialsId: GITHUB_CREDS_ID, url: 'https://github.com/paul2021-r/project-mini-frontend.git', branch: 'main'
+                        git credentialsId: GITHUB_CREDS_ID, url: 'https://github.com/paul2021-r/project-protostar-frontend.git', branch: 'main'
                     } catch (Exception e) {
                         failureStage = "Checkout Stage"
                         throw e
