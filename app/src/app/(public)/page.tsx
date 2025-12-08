@@ -24,16 +24,6 @@ export default function LandingPage() {
             AI-powered career management that helps you shine. Organize your
             portfolio, prepare for interviews, and connect with opportunities.
           </p>
-          <div className="space-x-4">
-            <Link href="/login">
-              <Button size="lg">Get Started</Button>
-            </Link>
-            <Link href="/features">
-              <Button variant="outline" size="lg">
-                Learn More
-              </Button>
-            </Link>
-          </div>
         </div>
       </section>
 
