@@ -1,6 +1,6 @@
 {
-  "name": "project-mini",
-  "version": "0.1.0",
+  "name": "project-protostar",
+  "version": "0.9.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -31,7 +31,7 @@
     "lucide-react": "^0.555.0",
     "next": "15.5.7",
     "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react-dom": "19.1.2",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "zustand": "^5.0.9"
@@ -43,7 +43,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.5",
+    "eslint-config-next": "15.5.7",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.6.2",
     "tailwindcss": "^4",

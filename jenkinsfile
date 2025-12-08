@@ -188,7 +188,7 @@ pipeline {
                         def newTag = "${env.BUILD_NUMBER}"
                         def earlyTag = "${env.BUILD_NUMBER.toInteger() - 1}"
                         def tagEnvVar = (deployService == "nextjs-green") ? "TAG_GREEN" : "TAG_BLUE"
-                        def tagOppositeEnvVar = (deployService == "nestjs-green") ? "TAG_BLUE" : "TAG_GREEN"
+                        def tagOppositeEnvVar = (deployService == "nextjs-green") ? "TAG_BLUE" : "TAG_GREEN"
                         withCredentials([usernamePassword(credentialsId: GHCR_CREDS_ID, usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
                             sshagent(credentials: [TARGET_SSH_CREDS_ID]) {
                                 sh """ 
