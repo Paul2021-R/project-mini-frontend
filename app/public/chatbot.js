@@ -513,6 +513,22 @@
         return `sess_${timestamp}_${cleanPath}_${Math.random().toString(36).substr(2, 9)}`;
     };
 
+    const escapeHtml = (text) => {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    };
+
+    const safeJsonParse = (str, fallback) => {
+        try {
+            return str ? JSON.parse(str) : fallback;
+        } catch (e) {
+            console.error('Protostar: JSON Parse Error', e);
+            return fallback;
+        }
+    };
+
     const isSessionExpired = (lastUpdated) => {
         const now = new Date();
         const diffTime = Math.abs(now - new Date(lastUpdated));
@@ -527,7 +543,7 @@
 
     // --- Data Management ---
     const getSessions = () => {
-        let sessions = JSON.parse(localStorage.getItem('protostar_sessions') || '[]');
+        let sessions = safeJsonParse(localStorage.getItem('protostar_sessions'), []);
 
         // Migration: Check if old history exists and migrate
         const oldHistory = localStorage.getItem('protostar_chat_history');
@@ -537,7 +553,7 @@
                 created_at: new Date().toISOString(),
                 last_updated: new Date().toISOString(),
                 url: window.location.pathname,
-                messages: JSON.parse(oldHistory)
+                messages: safeJsonParse(oldHistory, [])
             };
             sessions.push(mainSession);
             localStorage.removeItem('protostar_chat_history'); // Delete old key
@@ -626,10 +642,10 @@
             let html = '';
             if (msg.attachments && msg.attachments.length > 0) {
                 msg.attachments.forEach(att => {
-                    html += `<div class="attachment-pill-in-chat">📄 ${att.title}</div>`;
+                    html += `<div class="attachment-pill-in-chat">📄 ${escapeHtml(att.title)}</div>`;
                 });
             }
-            html += `<div>${msg.text}</div>`;
+            html += `<div>${escapeHtml(msg.text)}</div>`;
 
             bubble.innerHTML = html;
             messageList.appendChild(bubble);
@@ -653,7 +669,8 @@
 
             div.innerHTML = `
              <span class="session-date">${dateStr}</span>
-             <span class="session-title">${decodeURIComponent(s.url)}</span> 
+             <span class="session-date">${dateStr}</span>
+             <span class="session-title">${escapeHtml(decodeURIComponent(s.url))}</span> 
            `;
 
             div.addEventListener('click', () => {

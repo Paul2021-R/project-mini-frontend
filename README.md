@@ -39,3 +39,6 @@ pnpm start:dev
 ```
 
 Open [http://localhost:5858](http://localhost:5858) with your browser to see the result.
+
+## AI_Rules
+Code generation and task execution must adhere to the guidelines established in [project-protostar/docs/guide](../../docs/guide).

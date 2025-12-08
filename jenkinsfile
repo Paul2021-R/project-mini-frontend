@@ -16,11 +16,11 @@ pipeline {
 
         DISCORD_CREDS_ID = 'discord-webhook-url'
 
-        IMAGE_NAME = 'ghcr.io/paul2021-r/project-mini-frontend'
+        IMAGE_NAME = 'ghcr.io/paul2021-r/project-protostar-frontend'
 
         TARGET_HOST = credentials('ssh-host-creds')
         TARGET_PORT = credentials('ssh-port-creds')
-        TARGET_PROJECT_PATH = '/home/hansol/workspace/project-mini-frontend'
+        TARGET_PROJECT_PATH = '/home/hansol/workspace/project-protostar-frontend'
         TARGET_INFRA_PATH = '/home/hansol/workspace/project-protostar-server-configs/main-server'
     }
 
@@ -31,7 +31,7 @@ pipeline {
                 script {
                     try {
                         echo "1. Get the latest code from GitHub"
-                        git credentialsId: GITHUB_CREDS_ID, url: 'https://github.com/paul2021-r/project-mini-frontend.git', branch: 'main'
+                        git credentialsId: GITHUB_CREDS_ID, url: 'https://github.com/paul2021-r/project-protostar-frontend.git', branch: 'main'
                     } catch (Exception e) {
                         failureStage = "Checkout Stage"
                         throw e
@@ -186,7 +186,9 @@ pipeline {
 
                         def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
                         def newTag = "${env.BUILD_NUMBER}"
+                        def earlyTag = "${env.BUILD_NUMBER.toInteger() - 1}"
                         def tagEnvVar = (deployService == "nextjs-green") ? "TAG_GREEN" : "TAG_BLUE"
+                        def tagOppositeEnvVar = (deployService == "nextjs-green") ? "TAG_BLUE" : "TAG_GREEN"
                         withCredentials([usernamePassword(credentialsId: GHCR_CREDS_ID, usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
                             sshagent(credentials: [TARGET_SSH_CREDS_ID]) {
                                 sh """ 
@@ -208,6 +210,7 @@ pipeline {
 
                                     echo "--- Exporting new tag for compose: ${tagEnvVar}=${newTag} ---"
                                     export ${tagEnvVar}="${newTag}"
+                                    export ${tagOppositeEnvVar}="${earlyTag}"
                                     
                                     docker compose --env-file init.env up -d --no-deps --force-recreate ${deployService}
 
