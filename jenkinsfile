@@ -24,6 +24,11 @@ pipeline {
         TARGET_INFRA_PATH = '/home/hansol/workspace/project-protostar-server-configs/main-server'
     }
 
+    parameters {
+        choice(name: 'TARGET_COLOR', choices: ['Auto', 'Blue', 'Green', 'Both'], description: 'Select the color to deploy. Auto follows BUILD_NUMBER odd/even logic.')
+        choice(name: 'DEPLOY_ACTION', choices: ['Full Deploy', 'Build & Deploy Only', 'Switch Traffic Only'], description: 'Select the scope of the deployment.')
+    }
+
     stages {
     // code pull
         stage('Checkout') {
@@ -141,6 +146,9 @@ pipeline {
 
         // build image
         stage('Build Image') {
+            when {
+                expression { params.DEPLOY_ACTION != 'Switch Traffic Only' }
+            }
             steps {
                 echo "5. Build New Docker Image"
                 script {
@@ -157,6 +165,9 @@ pipeline {
 
         // push image
         stage('Push to GHCR') {
+            when {
+                expression { params.DEPLOY_ACTION != 'Switch Traffic Only' }
+            }
             steps {
                 echo "6. Push the Docker Image to GHCR"
                 script {
@@ -180,53 +191,90 @@ pipeline {
                 echo "7. Deploy the new image to the ${TARGET_DEPLOY_SERVER} server"
                 script {
                     try {
-                        // 어떤 컨테이너를 업데이트 및 업스트림 대상을 지정
-                        def deployService = (env.BUILD_NUMBER.toInteger() % 2 == 0) ? "nextjs-green" : "nextjs-blue" 
-                        def upstreamService = (deployService == "nextjs-green") ? "nextjs-blue" : "nextjs-green"
+                        // 1. Determine Target Services
+                        def deployServices = []
+                        if (params.TARGET_COLOR == 'Both') {
+                             deployServices = ['nextjs-blue', 'nextjs-green']
+                        } else if (params.TARGET_COLOR == "Auto") {
+                             deployServices = [(env.BUILD_NUMBER.toInteger() % 2 == 0) ? "nextjs-green" : "nextjs-blue"]
+                        } else if (params.TARGET_COLOR == "Blue") {
+                             deployServices = ["nextjs-blue"]
+                        } else {
+                             deployServices = ["nextjs-green"]
+                        }
+
+                        echo "Target Services via ${params.TARGET_COLOR}: ${deployServices}"
 
                         def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
                         def newTag = "${env.BUILD_NUMBER}"
-                        def earlyTag = "${env.BUILD_NUMBER.toInteger() - 1}"
-                        def tagEnvVar = (deployService == "nextjs-green") ? "TAG_GREEN" : "TAG_BLUE"
-                        def tagOppositeEnvVar = (deployService == "nextjs-green") ? "TAG_BLUE" : "TAG_GREEN"
+                        def earlyTag = "${Math.max(1, env.BUILD_NUMBER.toInteger() - 1)}"
+                        
                         withCredentials([usernamePassword(credentialsId: GHCR_CREDS_ID, usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
                             sshagent(credentials: [TARGET_SSH_CREDS_ID]) {
-                                sh """ 
-                                    ssh -o StrictHostKeyChecking=no -p ${TARGET_PORT} ${TARGET_HOST} '
-                                    set -ex
+                                // 2. Deployment Script Construction
+                                def commands = []
 
-                                    echo "--- Logging in to GHCR on target server ---"
-                                    echo "${GHCR_TOKEN}" | docker login ghcr.io -u ${GHCR_USER} --password-stdin
+                                // Common Setup
+                                commands << "set -e"
+                                
+                                // Action: Build & Deploy (or Full)
+                                if (params.DEPLOY_ACTION != 'Switch Traffic Only') {
+                                    commands << "echo '--- Logging in to GHCR on target server ---'"
+                                    commands << "echo '${GHCR_TOKEN}' | docker login ghcr.io -u ${GHCR_USER} --password-stdin"
 
-                                    echo "--- (1/4) Pull the new image : ${imageTag} ---"
-                                    docker pull ${imageTag}
+                                    commands << "echo '--- (1/4) Pull the new image : ${imageTag} ---'"
+                                    commands << "docker pull ${imageTag}"
 
-                                    echo "--- (2/4) Replace ${deployService} Server to new  ---"
-                                    cd ${TARGET_PROJECT_PATH}
+                                    commands << "echo '--- (2/4) Replace Server(s) to new  ---'"
+                                    commands << "cd ${TARGET_PROJECT_PATH}"
                                     
-                                    echo "--- Refresh main repository ---"
-                                    git pull origin main
-                                    git checkout main
+                                    commands << "echo '--- Refresh main repository ---'"
+                                    commands << "git pull origin main" 
+                                    commands << "git checkout main"
 
-                                    echo "--- Exporting new tag for compose: ${tagEnvVar}=${newTag} ---"
-                                    export ${tagEnvVar}="${newTag}"
-                                    export ${tagOppositeEnvVar}="${earlyTag}"
+                                    // Loop through services
+                                    deployServices.each { service ->
+                                        def tagEnvVar = (service == "nextjs-green") ? "TAG_GREEN" : "TAG_BLUE"
+                                        commands << "echo '--- Exporting new tag for ${service}: ${tagEnvVar}=${newTag} ---'"
+                                        commands << "export ${tagEnvVar}='${newTag}'"
+                                    }
                                     
-                                    docker compose --env-file init.env up -d --no-deps --force-recreate ${deployService}
+                                    // If 'Single' case, we formerly exported the opposite tag too.
+                                    if (params.TARGET_COLOR != 'Both') {
+                                        def activeService = deployServices[0]
+                                        def tagOppositeEnvVar = (activeService == "nextjs-green") ? "TAG_BLUE" : "TAG_GREEN"
+                                        commands << "export ${tagOppositeEnvVar}='${earlyTag}'"
+                                    }
 
-                                    echo "--- (3/4) Switch Nginx Configuration to change traffic ---"
-                                    cd ${TARGET_INFRA_PATH}
-                                    sed -i "s|server main-nextjs-.*:3000;|server main-${deployService}:3000;|" ./nginx/nginx_upstream_nextjs.conf   
-
-                                    echo "--- (4/4) Reload Nginx Configuration ---"
-                                    docker exec main-protostar-nginx nginx -s reload
-
-                                    echo "--- Logging out from GHCR on target server ---"
-                                    docker logout ghcr.io
+                                    deployServices.each { service ->
+                                        commands << "docker compose --env-file init.env up -d --no-deps --force-recreate ${service}"
+                                    }
                                     
-                                    echo "--- All Deploy Proccess is done ---"
-                                    '
-                                """
+                                    commands << "echo '--- Logging out from GHCR on target server ---'"
+                                    commands << "docker logout ghcr.io"
+                                }
+
+                                // Action: Switch Traffic (or Full)
+                                if (params.DEPLOY_ACTION != 'Build & Deploy Only') {
+                                    commands << "echo '--- (3/4) Switch Nginx Configuration to change traffic ---'"
+                                    
+                                    // Only switch upstream if we are targeting a specific single color
+                                    if (params.TARGET_COLOR != 'Both') {
+                                        def targetService = deployServices[0]
+                                        commands << "cd ${TARGET_INFRA_PATH}"
+                                        commands << "sed -i 's|server main-nextjs-.*:3000;|server main-${targetService}:3000;|' ./nginx/nginx_upstream_nextjs.conf"   
+                                    } else {
+                                        commands << "echo 'Skipping Nginx Upstream Switch because TARGET_COLOR is Both (Preserving current active upstream)'"
+                                    }
+
+                                    commands << "echo '--- (4/4) Reload Nginx Configuration ---'"
+                                    commands << "docker exec main-protostar-nginx nginx -s reload"
+                                }
+
+                                commands << "echo '--- All Deploy Proccess is done ---'"
+                                
+                                def deployScript = commands.join('\n')
+                                sh "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -p ${TARGET_PORT} ${TARGET_HOST} \"${deployScript}\""
                             }
                         }
                     } catch (Exception e) {
