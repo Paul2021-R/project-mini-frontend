@@ -62,7 +62,11 @@ export function Header() {
           <nav className="flex items-center space-x-2">
             <Link href="/login">
               {/* Desktop Login Text */}
-              <Button variant="ghost" size="sm" className="hidden lg:flex whitespace-nowrap">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hidden lg:flex whitespace-nowrap"
+              >
                 Login
               </Button>
               {/* Mobile/Tablet Login Icon */}
@@ -72,7 +76,9 @@ export function Header() {
               </Button>
             </Link>
             <Link href="/register">
-              <Button size="sm" className="whitespace-nowrap">Get Started</Button>
+              <Button size="sm" className="whitespace-nowrap">
+                Get Started
+              </Button>
             </Link>
           </nav>
         </div>

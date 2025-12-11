@@ -28,7 +28,9 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold lg:text-2xl">12</div>
-            <p className="text-sm text-muted-foreground lg:text-xs">+2 new this week</p>
+            <p className="text-sm text-muted-foreground lg:text-xs">
+              +2 new this week
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -40,7 +42,9 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold lg:text-2xl">3</div>
-            <p className="text-sm text-muted-foreground lg:text-xs">Currently active</p>
+            <p className="text-sm text-muted-foreground lg:text-xs">
+              Currently active
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -48,7 +52,9 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
           <CardHeader>
-            <CardTitle className="text-lg lg:text-base">Recent Activity</CardTitle>
+            <CardTitle className="text-lg lg:text-base">
+              Recent Activity
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-8">

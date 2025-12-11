@@ -23,7 +23,9 @@ export default function AboutRecruiterPage() {
             <Badge className="mb-2" variant="outline">
               For Companies
             </Badge>
-            <h2 className="text-2xl md:text-3xl font-bold">Efficiency & Insight</h2>
+            <h2 className="text-2xl md:text-3xl font-bold">
+              Efficiency & Insight
+            </h2>
             <p className="text-lg leading-relaxed text-muted-foreground">
               Don't struggle with complex recruitment processes. Protostar
               instantly summarizes and extracts key points from resumes,
@@ -35,7 +37,9 @@ export default function AboutRecruiterPage() {
               <li className="flex items-center gap-2">
                 ✅ Instant Resume & Blog Summarization
               </li>
-              <li className="flex items-center gap-2">✅ Interactive AI Chatbot Exploration</li>
+              <li className="flex items-center gap-2">
+                ✅ Interactive AI Chatbot Exploration
+              </li>
               <li className="flex items-center gap-2">
                 ✅ High-Efficiency Screening
               </li>

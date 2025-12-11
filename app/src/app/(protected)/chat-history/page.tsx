@@ -7,7 +7,9 @@ export default function ChatHistoryPage() {
           <p className="text-sm text-muted-foreground">Session List</p>
         </div>
         <div className="w-2/3 p-4 flex items-center justify-center">
-          <p className="text-muted-foreground">Select a conversation to view details</p>
+          <p className="text-muted-foreground">
+            Select a conversation to view details
+          </p>
         </div>
       </div>
     </div>

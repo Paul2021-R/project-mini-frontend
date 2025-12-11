@@ -133,7 +133,11 @@ export function AppSidebar() {
             <SidebarMenu className="gap-3">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="h-10 text-base font-medium lg:text-sm" onClick={handleLinkClick}>
+                  <SidebarMenuButton
+                    asChild
+                    className="h-10 text-base font-medium lg:text-sm"
+                    onClick={handleLinkClick}
+                  >
                     <Link href={item.url} className="gap-3">
                       <item.icon className="size-5" />
                       <span>{item.title}</span>
@@ -150,7 +154,6 @@ export function AppSidebar() {
           <ModeToggle />
         </div>
       </SidebarFooter>
-
     </Sidebar>
   );
 }

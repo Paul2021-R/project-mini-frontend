@@ -11,7 +11,9 @@ export default function MaterialsPage() {
         <h2 className="text-lg font-semibold mb-2">Uploaded Materials</h2>
         <div className="space-y-2">
           {/* List placeholder */}
-          <p className="text-sm text-muted-foreground">No materials uploaded yet.</p>
+          <p className="text-sm text-muted-foreground">
+            No materials uploaded yet.
+          </p>
         </div>
       </div>
     </div>

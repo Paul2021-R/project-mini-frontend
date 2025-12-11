@@ -42,7 +42,9 @@ export type SidebarContextProps = {
   toggleSidebar: () => void;
 };
 
-export const SidebarContext = React.createContext<SidebarContextProps | null>(null);
+export const SidebarContext = React.createContext<SidebarContextProps | null>(
+  null,
+);
 
 function useSidebar() {
   const context = React.useContext(SidebarContext);
@@ -234,9 +236,9 @@ const Sidebar = React.forwardRef<
             'group-data-[collapsible=offcanvas]:w-0',
             'group-data-[side=right]:rotate-180',
             collapsible === 'icon' &&
-            (variant === 'floating' || variant === 'inset'
-              ? 'w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]'
-              : 'w-[--sidebar-width-icon]'),
+              (variant === 'floating' || variant === 'inset'
+                ? 'w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]'
+                : 'w-[--sidebar-width-icon]'),
           )}
         />
         <div
@@ -252,8 +254,8 @@ const Sidebar = React.forwardRef<
             // Mobile (Phone < 768px): Full screen width when expanded
             // Tablet (768px <= width < 1024px): Standard width (handled by default w-[--sidebar-width])
             isMobile &&
-            state === 'expanded' &&
-            'w-[100vw] md:w-[--sidebar-width] p-0 md:p-2',
+              state === 'expanded' &&
+              'w-[100vw] md:w-[--sidebar-width] p-0 md:p-2',
             className,
           )}
           {...props}
@@ -532,7 +534,8 @@ const sidebarMenuButtonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'hover:bg-slate-200/60 dark:hover:bg-slate-700/60 hover:text-sidebar-accent-foreground',
+        default:
+          'hover:bg-slate-200/60 dark:hover:bg-slate-700/60 hover:text-sidebar-accent-foreground',
         outline:
           'bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]',
       },
@@ -630,7 +633,7 @@ const SidebarMenuAction = React.forwardRef<
         'peer-data-[size=lg]/menu-button:top-2.5',
         'group-data-[collapsible=icon]:hidden',
         showOnHover &&
-        'group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0',
+          'group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0',
         className,
       )}
       {...props}

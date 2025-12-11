@@ -23,13 +23,15 @@ export default function AboutSeekerPage() {
             <Badge className="mb-2" variant="outline">
               For Talent
             </Badge>
-            <h2 className="text-2xl md:text-3xl font-bold">Become a Shining Star</h2>
+            <h2 className="text-2xl md:text-3xl font-bold">
+              Become a Shining Star
+            </h2>
             <p className="text-lg leading-relaxed text-muted-foreground">
-              Protostar acts as your unique Agentic assistant. By identifying your
-              core strengths and applying your desired tone and mood, we help you
-              appeal to recruiters effectively. Differentiate yourself with a
-              portfolio that uses the latest technology to showcase your unique
-              value.
+              Protostar acts as your unique Agentic assistant. By identifying
+              your core strengths and applying your desired tone and mood, we
+              help you appeal to recruiters effectively. Differentiate yourself
+              with a portfolio that uses the latest technology to showcase your
+              unique value.
             </p>
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
               <li className="flex items-center gap-2">
